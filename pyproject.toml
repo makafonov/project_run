@@ -48,7 +48,10 @@ include_trailing_comma = true
 line_length = 1
 
 [tool.mypy]
-plugins = ["mypy_django_plugin.main"]
+plugins = [
+    "mypy_drf_plugin.main",
+    "mypy_django_plugin.main",
+]
 strict = true
 show_error_context = true
 
@@ -58,7 +61,8 @@ django_settings_module = "project_run.settings.local"
 [dependency-groups]
 dev = [
     "django-stubs[compatible-mypy]>=5.2.1",
+    "djangorestframework-stubs[compatible-mypy]>=3.16.0",
     "isort>=6.0.1",
-    "mypy>=1.16.1",
+    "mypy==1.15",
     "ruff>=0.12.1",
 ]
