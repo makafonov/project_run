@@ -1,6 +1,6 @@
 import os
 
-from .base import *
+from .base import *  # noqa: F403
 
 
 # Не редактируйте этот production файл, что не сломать наш продакшн сайт!

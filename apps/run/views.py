@@ -11,6 +11,16 @@ from rest_framework.decorators import (
 from rest_framework.response import (
     Response,
 )
+from rest_framework.viewsets import (
+    ModelViewSet,
+)
+
+from apps.run.models import (
+    Run,
+)
+from apps.run.serializers import (
+    RunSerializer,
+)
 
 
 if TYPE_CHECKING:
@@ -21,8 +31,15 @@ if TYPE_CHECKING:
 
 @api_view(['GET'])
 def company_details(_: 'Request') -> Response:
-    return Response({
-        'company_name': settings.COMPANY_NAME,
-        'slogan': settings.SLOGAN,
-        'contacts': settings.CONTACTS,
-    })
+    return Response(
+        {
+            'company_name': settings.COMPANY_NAME,
+            'slogan': settings.SLOGAN,
+            'contacts': settings.CONTACTS,
+        }
+    )
+
+
+class RunViewSet(ModelViewSet[Run]):
+    queryset = Run.objects.all()
+    serializer_class = RunSerializer
