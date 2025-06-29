@@ -20,7 +20,6 @@ class Run(models.Model):
         verbose_name='Атлет',
     )
     comment = models.TextField(
-        blank=True,
         verbose_name='Комментарий',
     )
 
