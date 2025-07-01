@@ -17,6 +17,7 @@ from apps.run.enums import (
     UserType,
 )
 from apps.run.models import (
+    AthleteInfo,
     Run,
 )
 
@@ -57,3 +58,9 @@ class UserSerializer(ModelSerializer['UserModel']):
             return UserType.COACH
 
         return UserType.ATHLETE
+
+
+class AthleteInfoSerializer(ModelSerializer[AthleteInfo]):
+    class Meta:
+        model = AthleteInfo
+        fields = ('weight', 'goals', 'user_id')

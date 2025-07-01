@@ -1,6 +1,10 @@
 from django.conf import (
     settings,
 )
+from django.core.validators import (
+    MaxValueValidator,
+    MinValueValidator,
+)
 from django.db import (
     models,
 )
@@ -37,3 +41,28 @@ class Run(models.Model):
 
     def __str__(self) -> str:
         return f'Забег {self.id} от {self.created_at}'
+
+
+class AthleteInfo(models.Model):
+    """Информация об атлете."""
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='athlete_info',
+        verbose_name='Атлет',
+    )
+    goals = models.TextField(
+        verbose_name='Цели атлета',
+    )
+    weight = models.IntegerField(
+        verbose_name='Вес атлета',
+        null=True,
+        validators=(
+            MinValueValidator(1),
+            MaxValueValidator(900),
+        ),
+    )
+
+    def __str__(self) -> str:
+        return f'Информация атлета {self.user_id}'

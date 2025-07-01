@@ -20,6 +20,7 @@ from django_filters.rest_framework import (
     DjangoFilterBackend,
 )
 from rest_framework import (
+    mixins,
     status,
 )
 from rest_framework.decorators import (
@@ -39,6 +40,7 @@ from rest_framework.views import (
     APIView,
 )
 from rest_framework.viewsets import (
+    GenericViewSet,
     ModelViewSet,
     ReadOnlyModelViewSet,
 )
@@ -47,10 +49,12 @@ from apps.run.enums import (
     UserType,
 )
 from apps.run.models import (
+    AthleteInfo,
     Run,
     RunStatus,
 )
 from apps.run.serializers import (
+    AthleteInfoSerializer,
     RunSerializer,
     UserSerializer,
 )
@@ -62,6 +66,9 @@ if TYPE_CHECKING:
     )
     from rest_framework.request import (
         Request,
+    )
+    from rest_framework.serializers import (
+        BaseSerializer,
     )
 
 
@@ -149,3 +156,24 @@ class StopRunAPIView(APIView):
         serializer = RunSerializer(run)
 
         return Response(serializer.data)
+
+
+class AtheleteInfoAPIView(
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    GenericViewSet[AthleteInfo],
+):
+    queryset = AthleteInfo.objects.all()
+    serializer_class = AthleteInfoSerializer
+    http_method_names = ('get', 'put')
+    lookup_field = 'user_id'
+
+    def get_object(self) -> AthleteInfo:
+        user = get_object_or_404(User, id=self.kwargs[self.lookup_field])
+        athlete_info, _ = AthleteInfo.objects.get_or_create(user=user)
+
+        return athlete_info
+
+    def perform_update(self, serializer: 'BaseSerializer[AthleteInfo]') -> None:
+        user = get_object_or_404(User, id=self.kwargs[self.lookup_field])
+        serializer.save(user=user)
