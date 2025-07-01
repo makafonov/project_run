@@ -11,6 +11,12 @@ from django.contrib.auth import (
 from django.db.models import (
     QuerySet,
 )
+from django.shortcuts import (
+    get_object_or_404,
+)
+from rest_framework import (
+    status,
+)
 from rest_framework.decorators import (
     api_view,
 )
@@ -19,6 +25,9 @@ from rest_framework.filters import (
 )
 from rest_framework.response import (
     Response,
+)
+from rest_framework.views import (
+    APIView,
 )
 from rest_framework.viewsets import (
     ModelViewSet,
@@ -30,6 +39,7 @@ from apps.run.enums import (
 )
 from apps.run.models import (
     Run,
+    RunStatus,
 )
 from apps.run.serializers import (
     RunSerializer,
@@ -79,3 +89,41 @@ class UserViewSet(ReadOnlyModelViewSet['UserModel']):
             qs = qs.filter(is_staff=is_staff)
 
         return qs
+
+
+class StartRunAPIView(APIView):
+    def post(self, _: 'Request', run_id: int) -> Response:
+        run = get_object_or_404(Run, id=run_id)
+        if run.status != RunStatus.INIT:
+            return Response(
+                {
+                    'detail': 'Забег уже стартовал или закончен.',
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        run.status = RunStatus.IN_PROGRESS
+        run.save(update_fields=['status'])
+
+        serializer = RunSerializer(run)
+
+        return Response(serializer.data)
+
+
+class StopRunAPIView(APIView):
+    def post(self, _: 'Request', run_id: int) -> Response:
+        run = get_object_or_404(Run, id=run_id)
+        if run.status != RunStatus.IN_PROGRESS:
+            return Response(
+                {
+                    'detail': 'Забег не запущен.',
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        run.status = RunStatus.FINISHED
+        run.save(update_fields=['status'])
+
+        serializer = RunSerializer(run)
+
+        return Response(serializer.data)

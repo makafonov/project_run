@@ -34,6 +34,9 @@ ignore = [
     "UP040",
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"apps/**/migrations/*.py" = ["RUF012"]
+
 [tool.ruff.lint.flake8-quotes]
 inline-quotes = "single"
 

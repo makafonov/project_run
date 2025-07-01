@@ -6,6 +6,12 @@ from django.db import (
 )
 
 
+class RunStatus(models.TextChoices):
+    INIT = 'init'
+    IN_PROGRESS = 'in_progress'
+    FINISHED = 'finished'
+
+
 class Run(models.Model):
     """Забег."""
 
@@ -21,6 +27,12 @@ class Run(models.Model):
     )
     comment = models.TextField(
         verbose_name='Комментарий',
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=RunStatus,
+        default=RunStatus.INIT,
+        verbose_name='Статус забега',
     )
 
     def __str__(self) -> str:

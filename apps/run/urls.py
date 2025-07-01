@@ -8,6 +8,8 @@ from rest_framework.routers import (
 
 from apps.run.views import (
     RunViewSet,
+    StartRunAPIView,
+    StopRunAPIView,
     UserViewSet,
     company_details,
 )
@@ -19,5 +21,7 @@ router.register('users', UserViewSet)
 
 urlpatterns = [
     path('company_details/', company_details),
+    path('runs/<int:run_id>/start/', StartRunAPIView.as_view()),
+    path('runs/<int:run_id>/stop/', StopRunAPIView.as_view()),
     path('', include(router.urls)),
 ]
