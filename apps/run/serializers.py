@@ -29,7 +29,15 @@ if TYPE_CHECKING:
 User = get_user_model()
 
 
+class AthleteSerializer(ModelSerializer['UserModel']):
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'last_name', 'first_name')
+
+
 class RunSerializer(ModelSerializer[Run]):
+    athlete_data = AthleteSerializer(source='athlete', read_only=True)
+
     class Meta:
         model = Run
         fields = '__all__'
