@@ -191,6 +191,15 @@ wheels = [
 ]
 
 [[package]]
+name = "lefthook"
+version = "1.11.14"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/85/8e/d32c7b53a37d565c3301187210e12d657bb33fab709e5d74147f12f5a471/lefthook-1.11.14.tar.gz", hash = "sha256:f41566aef3506214287e1d60c37cc14e1df8bdaa9bc489390b4e0d9a776a9495", size = 49490734, upload-time = "2025-06-16T09:25:09.88Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/80/33/733ed0f218b1959e52b9b35617ad7ef6a082558e938d9403eb0197c20e6e/lefthook-1.11.14-py3-none-any.whl", hash = "sha256:daf02089d0ba368070a132524bf0b2068ba131d2208678eecac719c351b72dac", size = 49734655, upload-time = "2025-06-16T09:25:05.873Z" },
+]
+
+[[package]]
 name = "mypy"
 version = "1.15.0"
 source = { registry = "https://pypi.org/simple" }
@@ -235,6 +244,7 @@ dev = [
     { name = "django-stubs", extra = ["compatible-mypy"] },
     { name = "djangorestframework-stubs", extra = ["compatible-mypy"] },
     { name = "isort" },
+    { name = "lefthook" },
     { name = "mypy" },
     { name = "ruff" },
 ]
@@ -253,6 +263,7 @@ dev = [
     { name = "django-stubs", extras = ["compatible-mypy"], specifier = ">=5.2.1" },
     { name = "djangorestframework-stubs", extras = ["compatible-mypy"], specifier = ">=3.16.0" },
     { name = "isort", specifier = ">=6.0.1" },
+    { name = "lefthook", specifier = ">=1.11.14" },
     { name = "mypy", specifier = "==1.15" },
     { name = "ruff", specifier = ">=0.12.1" },
 ]

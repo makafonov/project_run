@@ -1,0 +1,6 @@
+pre-commit:
+  parallel: true
+  jobs:
+    - run: make isort-check
+    - run: make ruff-check
+    - run: make mypy
