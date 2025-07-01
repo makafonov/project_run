@@ -14,6 +14,9 @@ from django.db.models import (
 from django.shortcuts import (
     get_object_or_404,
 )
+from django_filters.rest_framework import (
+    DjangoFilterBackend,
+)
 from rest_framework import (
     status,
 )
@@ -21,7 +24,11 @@ from rest_framework.decorators import (
     api_view,
 )
 from rest_framework.filters import (
+    OrderingFilter,
     SearchFilter,
+)
+from rest_framework.pagination import (
+    PageNumberPagination,
 )
 from rest_framework.response import (
     Response,
@@ -59,6 +66,11 @@ if TYPE_CHECKING:
 User = get_user_model()
 
 
+class Pagination(PageNumberPagination):
+    page_size_query_param = 'size'
+    max_page_size = 50
+
+
 @api_view(['GET'])
 def company_details(_: 'Request') -> Response:
     return Response(
@@ -73,13 +85,19 @@ def company_details(_: 'Request') -> Response:
 class RunViewSet(ModelViewSet[Run]):
     queryset = Run.objects.select_related('athlete').all()
     serializer_class = RunSerializer
+    filter_backends = (DjangoFilterBackend, OrderingFilter)
+    pagination_class = Pagination
+    filterset_fields = ('status', 'athlete')
+    ordering_fields = ('created_at',)
 
 
 class UserViewSet(ReadOnlyModelViewSet['UserModel']):
     queryset = User.objects.filter(is_superuser=False).all()
     serializer_class = UserSerializer
-    filter_backends = (SearchFilter,)
+    filter_backends = (SearchFilter, OrderingFilter)
+    pagination_class = Pagination
     search_fields = ('first_name', 'last_name')
+    ordering_fields = ('date_joined',)
 
     def get_queryset(self) -> QuerySet['UserModel']:
         qs = self.queryset
