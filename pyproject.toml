@@ -45,6 +45,7 @@ multi_line_output = 3
 lines_after_imports = 2
 force_grid_wrap = true
 include_trailing_comma = true
+combine_as_imports = true
 line_length = 1
 
 [tool.mypy]
