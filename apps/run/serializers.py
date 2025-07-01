@@ -9,6 +9,7 @@ from rest_framework.fields import (
     SerializerMethodField,
 )
 from rest_framework.serializers import (
+    IntegerField,
     ModelSerializer,
 )
 
@@ -45,10 +46,11 @@ class RunSerializer(ModelSerializer[Run]):
 
 class UserSerializer(ModelSerializer['UserModel']):
     type = SerializerMethodField()
+    runs_finished = IntegerField()
 
     class Meta:
         model = User
-        fields = ('id', 'date_joined', 'username', 'last_name', 'first_name', 'type')
+        fields = ('id', 'date_joined', 'username', 'last_name', 'first_name', 'type', 'runs_finished')
 
     def get_type(self, obj: 'UserModel') -> str:
         if obj.is_staff:

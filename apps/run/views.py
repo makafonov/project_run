@@ -9,6 +9,8 @@ from django.contrib.auth import (
     get_user_model,
 )
 from django.db.models import (
+    Count,
+    Q,
     QuerySet,
 )
 from django.shortcuts import (
@@ -92,7 +94,7 @@ class RunViewSet(ModelViewSet[Run]):
 
 
 class UserViewSet(ReadOnlyModelViewSet['UserModel']):
-    queryset = User.objects.filter(is_superuser=False).all()
+    queryset = User.objects.filter(is_superuser=False)
     serializer_class = UserSerializer
     filter_backends = (SearchFilter, OrderingFilter)
     pagination_class = Pagination
@@ -106,7 +108,9 @@ class UserViewSet(ReadOnlyModelViewSet['UserModel']):
             is_staff = type_ == UserType.COACH
             qs = qs.filter(is_staff=is_staff)
 
-        return qs
+        return qs.annotate(
+            runs_finished=Count('runs', filter=Q(runs__status=RunStatus.FINISHED)),
+        )
 
 
 class StartRunAPIView(APIView):
