@@ -37,6 +37,7 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "apps/**/migrations/*.py" = ["RUF012"]
+"project_run/settings/production.py" = ["F403"]
 
 [tool.ruff.lint.flake8-quotes]
 inline-quotes = "single"
@@ -47,10 +48,11 @@ quote-style = "single"
 [tool.isort]
 multi_line_output = 3
 lines_after_imports = 2
+line_length = 1
 force_grid_wrap = true
 include_trailing_comma = true
 combine_as_imports = true
-line_length = 1
+skip = ["project_run/settings/production.py"]
 
 [tool.mypy]
 plugins = [
