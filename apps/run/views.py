@@ -1,5 +1,6 @@
 from typing import (
     TYPE_CHECKING,
+    Any,
 )
 
 from django.conf import (
@@ -177,3 +178,9 @@ class AtheleteInfoAPIView(
     def perform_update(self, serializer: 'BaseSerializer[AthleteInfo]') -> None:
         user = get_object_or_404(User, id=self.kwargs[self.lookup_field])
         serializer.save(user=user)
+
+    def update(self, request: 'Request', *args: Any, **kwargs: Any) -> Response:  # noqa: ANN401
+        respose = super().update(request, *args, **kwargs)
+        respose.status_code = status.HTTP_201_CREATED
+
+        return respose
