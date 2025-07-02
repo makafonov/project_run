@@ -7,7 +7,8 @@ from rest_framework.routers import (
 )
 
 from apps.run.views import (
-    AtheleteInfoAPIView,
+    AtheleteInfoViewSet,
+    ChallengeViewSet,
     RunViewSet,
     StartRunAPIView,
     StopRunAPIView,
@@ -19,7 +20,8 @@ from apps.run.views import (
 router = DefaultRouter()
 router.register('runs', RunViewSet)
 router.register('users', UserViewSet)
-router.register('athlete_info', AtheleteInfoAPIView)
+router.register('athlete_info', AtheleteInfoViewSet)
+router.register('challenges', ChallengeViewSet)
 
 
 urlpatterns = [

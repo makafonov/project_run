@@ -66,3 +66,21 @@ class AthleteInfo(models.Model):
 
     def __str__(self) -> str:
         return f'Информация атлета {self.user_id}'
+
+
+class Challenge(models.Model):
+    """Челлендж атлета."""
+
+    athlete = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='challenges',
+        verbose_name='Атлет',
+    )
+    full_name = models.CharField(
+        max_length=100,
+        verbose_name='Название челленджа',
+    )
+
+    def __str__(self) -> str:
+        return f'Челлендж {self.full_name} атлета {self.athlete_id}'

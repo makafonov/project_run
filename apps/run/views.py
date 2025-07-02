@@ -51,11 +51,13 @@ from apps.run.enums import (
 )
 from apps.run.models import (
     AthleteInfo,
+    Challenge,
     Run,
     RunStatus,
 )
 from apps.run.serializers import (
     AthleteInfoSerializer,
+    ChallengeSerializer,
     RunSerializer,
     UserSerializer,
 )
@@ -71,6 +73,7 @@ if TYPE_CHECKING:
 
 
 User = get_user_model()
+_CHALLENGE_COUNT = 10
 
 
 class Pagination(PageNumberPagination):
@@ -151,12 +154,19 @@ class StopRunAPIView(APIView):
         run.status = RunStatus.FINISHED
         run.save(update_fields=['status'])
 
+        finished_run_count = Run.objects.filter(
+            athlete=run.athlete,
+            status=RunStatus.FINISHED,
+        ).count()
+        if finished_run_count % _CHALLENGE_COUNT == 0:
+            Challenge.objects.create(athlete=run.athlete, full_name='Сделай 10 Забегов!')
+
         serializer = RunSerializer(run)
 
         return Response(serializer.data)
 
 
-class AtheleteInfoAPIView(
+class AtheleteInfoViewSet(
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
     GenericViewSet[AthleteInfo],
@@ -177,3 +187,10 @@ class AtheleteInfoAPIView(
         respose.status_code = status.HTTP_201_CREATED
 
         return respose
+
+
+class ChallengeViewSet(mixins.ListModelMixin, GenericViewSet[Challenge]):
+    queryset = Challenge.objects.all()
+    serializer_class = ChallengeSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = ('athlete',)
