@@ -68,9 +68,6 @@ if TYPE_CHECKING:
     from rest_framework.request import (
         Request,
     )
-    from rest_framework.serializers import (
-        BaseSerializer,
-    )
 
 
 User = get_user_model()
@@ -174,10 +171,6 @@ class AtheleteInfoAPIView(
         athlete_info, _ = AthleteInfo.objects.get_or_create(user=user)
 
         return athlete_info
-
-    def perform_update(self, serializer: 'BaseSerializer[AthleteInfo]') -> None:
-        user = get_object_or_404(User, id=self.kwargs[self.lookup_field])
-        serializer.save(user=user)
 
     def update(self, request: 'Request', *args: Any, **kwargs: Any) -> Response:  # noqa: ANN401
         respose = super().update(request, *args, **kwargs)
