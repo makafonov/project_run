@@ -60,7 +60,7 @@ class AthleteInfo(models.Model):
         null=True,
         validators=(
             MinValueValidator(1),
-            MaxValueValidator(900),
+            MaxValueValidator(899),
         ),
     )
 
