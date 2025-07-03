@@ -27,6 +27,9 @@ from rest_framework import (
 from rest_framework.decorators import (
     api_view,
 )
+from rest_framework.exceptions import (
+    ValidationError,
+)
 from rest_framework.filters import (
     OrderingFilter,
     SearchFilter,
@@ -52,12 +55,14 @@ from apps.run.enums import (
 from apps.run.models import (
     AthleteInfo,
     Challenge,
+    Position,
     Run,
     RunStatus,
 )
 from apps.run.serializers import (
     AthleteInfoSerializer,
     ChallengeSerializer,
+    PositionSerializer,
     RunSerializer,
     UserSerializer,
 )
@@ -69,6 +74,9 @@ if TYPE_CHECKING:
     )
     from rest_framework.request import (
         Request,
+    )
+    from rest_framework.serializers import (
+        BaseSerializer,
     )
 
 
@@ -194,3 +202,16 @@ class ChallengeViewSet(mixins.ListModelMixin, GenericViewSet[Challenge]):
     serializer_class = ChallengeSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('athlete',)
+
+
+class PositionViewSet(ModelViewSet[Position]):
+    queryset = Position.objects.all()
+    serializer_class = PositionSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = ('run',)
+
+    def perform_create(self, serializer: 'BaseSerializer[Position]') -> None:
+        if serializer.validated_data['run'].status != RunStatus.IN_PROGRESS:
+            raise ValidationError({'status': ['Забег не запущен.']})
+
+        super().perform_create(serializer)

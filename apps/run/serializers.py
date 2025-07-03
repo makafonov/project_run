@@ -19,6 +19,7 @@ from apps.run.enums import (
 from apps.run.models import (
     AthleteInfo,
     Challenge,
+    Position,
     Run,
 )
 
@@ -71,3 +72,9 @@ class ChallengeSerializer(ModelSerializer[Challenge]):
     class Meta:
         model = Challenge
         fields = ('athlete', 'full_name')
+
+
+class PositionSerializer(ModelSerializer[Position]):
+    class Meta:
+        model = Position
+        fields = ('run', 'latitude', 'longitude')

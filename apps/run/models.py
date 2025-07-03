@@ -84,3 +84,31 @@ class Challenge(models.Model):
 
     def __str__(self) -> str:
         return f'Челлендж {self.full_name} атлета {self.athlete_id}'
+
+
+class Position(models.Model):
+    """Координата забега."""
+
+    run = models.ForeignKey(
+        Run,
+        on_delete=models.CASCADE,
+        related_name='positions',
+        verbose_name='Забег',
+    )
+    latitude = models.FloatField(
+        verbose_name='Широта',
+        validators=(
+            MinValueValidator(-90.0),
+            MaxValueValidator(90.0),
+        ),
+    )
+    longitude = models.FloatField(
+        verbose_name='Долгота',
+        validators=(
+            MinValueValidator(-180.0),
+            MaxValueValidator(180.0),
+        ),
+    )
+
+    def __str__(self) -> str:
+        return f'Координата забега {self.run_id} - ({self.latitude}, {self.longitude})'
