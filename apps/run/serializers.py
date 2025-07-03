@@ -77,4 +77,4 @@ class ChallengeSerializer(ModelSerializer[Challenge]):
 class PositionSerializer(ModelSerializer[Position]):
     class Meta:
         model = Position
-        fields = ('run', 'latitude', 'longitude')
+        fields = ('id', 'run', 'latitude', 'longitude')
