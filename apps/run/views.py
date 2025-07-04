@@ -20,6 +20,9 @@ from django.shortcuts import (
 from django_filters.rest_framework import (
     DjangoFilterBackend,
 )
+from geopy.distance import (  # type: ignore[import-untyped]
+    distance,
+)
 from rest_framework import (
     mixins,
     status,
@@ -82,6 +85,7 @@ if TYPE_CHECKING:
 
 User = get_user_model()
 _CHALLENGE_COUNT = 10
+_MIN_POSITION_COUNT = 2
 
 
 class Pagination(PageNumberPagination):
@@ -160,18 +164,36 @@ class StopRunAPIView(APIView):
             )
 
         run.status = RunStatus.FINISHED
-        run.save(update_fields=['status'])
+        run.distance = self._get_distance(positions=run.positions.all())
 
-        finished_run_count = Run.objects.filter(
-            athlete=run.athlete,
-            status=RunStatus.FINISHED,
-        ).count()
-        if finished_run_count % _CHALLENGE_COUNT == 0:
+        run.save(update_fields=['status', 'distance'])
+
+        if self._is_challenge_completed(run):
             Challenge.objects.create(athlete=run.athlete, full_name='Сделай 10 Забегов!')
 
         serializer = RunSerializer(run)
 
         return Response(serializer.data)
+
+    def _is_challenge_completed(self, run: Run) -> bool:
+        finished_run_count = Run.objects.filter(
+            athlete=run.athlete,
+            status=RunStatus.FINISHED,
+        ).count()
+
+        return finished_run_count % _CHALLENGE_COUNT == 0
+
+    def _get_distance(self, positions: QuerySet[Position]) -> float:
+        result = 0
+        if len(positions) < _MIN_POSITION_COUNT:
+            return result
+
+        for index in range(1, len(positions)):
+            prev = positions[index - 1]
+            current = positions[index]
+            result += distance((current.latitude, current.longitude), (prev.latitude, prev.longitude)).km
+
+        return result
 
 
 class AtheleteInfoViewSet(

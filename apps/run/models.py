@@ -38,6 +38,10 @@ class Run(models.Model):
         default=RunStatus.INIT,
         verbose_name='Статус забега',
     )
+    distance = models.FloatField(
+        verbose_name='Дистанция забега',
+        null=True,
+    )
 
     def __str__(self) -> str:
         return f'Забег {self.id} от {self.created_at}'
