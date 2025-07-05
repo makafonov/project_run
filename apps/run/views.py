@@ -13,6 +13,7 @@ from django.db.models import (
     Count,
     Q,
     QuerySet,
+    Sum,
 )
 from django.shortcuts import (
     get_object_or_404,
@@ -84,7 +85,10 @@ if TYPE_CHECKING:
 
 
 User = get_user_model()
-_CHALLENGE_COUNT = 10
+
+_CHALLENGE_RUN_COUNT = 10
+_CHALLENGE_DISTANCE = 50
+_CHALLENGE_DISTANCE_TEXT = 'Пробеги 50 километров!'
 _MIN_POSITION_COUNT = 2
 
 
@@ -168,20 +172,36 @@ class StopRunAPIView(APIView):
 
         run.save(update_fields=['status', 'distance'])
 
-        if self._is_challenge_completed(run):
+        if self._is_run_count_challenge_completed(run):
             Challenge.objects.create(athlete=run.athlete, full_name='Сделай 10 Забегов!')
+        if self._is_distance_challenge_completed(run):
+            Challenge.objects.create(athlete=run.athlete, full_name=_CHALLENGE_DISTANCE_TEXT)
 
         serializer = RunSerializer(run)
 
         return Response(serializer.data)
 
-    def _is_challenge_completed(self, run: Run) -> bool:
+    def _is_run_count_challenge_completed(self, run: Run) -> bool:
         finished_run_count = Run.objects.filter(
             athlete=run.athlete,
             status=RunStatus.FINISHED,
         ).count()
 
-        return finished_run_count % _CHALLENGE_COUNT == 0
+        return finished_run_count % _CHALLENGE_RUN_COUNT == 0
+
+    def _is_distance_challenge_completed(self, run: Run) -> bool:
+        if Challenge.objects.filter(
+            athlete=run.athlete,
+            full_name=_CHALLENGE_DISTANCE_TEXT,
+        ).exists():
+            return False
+
+        total_distance = Run.objects.filter(
+            athlete=run.athlete,
+            status=RunStatus.FINISHED,
+        ).aggregate(total_distance=Sum('distance'))['total_distance'] or 0
+
+        return total_distance >= _CHALLENGE_DISTANCE
 
     def _get_distance(self, positions: QuerySet[Position]) -> float:
         result = 0
