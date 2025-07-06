@@ -284,10 +284,6 @@ class FileUploadView(APIView):
         if serializer.is_valid():
             errors = CollectibleItemService.save_collectible_items(serializer.validated_data['file'])
 
-            return (
-                Response(status=status.HTTP_201_CREATED)
-                if not errors
-                else Response(errors, status=status.HTTP_400_BAD_REQUEST)
-            )
+            return Response(errors, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
