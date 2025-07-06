@@ -5,12 +5,11 @@ from typing import (
 from django.contrib.auth import (
     get_user_model,
 )
+from rest_framework import (
+    serializers,
+)
 from rest_framework.fields import (
     SerializerMethodField,
-)
-from rest_framework.serializers import (
-    IntegerField,
-    ModelSerializer,
 )
 
 from apps.run.enums import (
@@ -19,6 +18,7 @@ from apps.run.enums import (
 from apps.run.models import (
     AthleteInfo,
     Challenge,
+    CollectibleItem,
     Position,
     Run,
 )
@@ -33,13 +33,13 @@ if TYPE_CHECKING:
 User = get_user_model()
 
 
-class AthleteSerializer(ModelSerializer['UserModel']):
+class AthleteSerializer(serializers.ModelSerializer['UserModel']):
     class Meta:
         model = User
         fields = ('id', 'username', 'last_name', 'first_name')
 
 
-class RunSerializer(ModelSerializer[Run]):
+class RunSerializer(serializers.ModelSerializer[Run]):
     athlete_data = AthleteSerializer(source='athlete', read_only=True)
 
     class Meta:
@@ -47,9 +47,9 @@ class RunSerializer(ModelSerializer[Run]):
         fields = '__all__'
 
 
-class UserSerializer(ModelSerializer['UserModel']):
+class UserSerializer(serializers.ModelSerializer['UserModel']):
     type = SerializerMethodField()
-    runs_finished = IntegerField()
+    runs_finished = serializers.IntegerField()
 
     class Meta:
         model = User
@@ -62,19 +62,29 @@ class UserSerializer(ModelSerializer['UserModel']):
         return UserType.ATHLETE
 
 
-class AthleteInfoSerializer(ModelSerializer[AthleteInfo]):
+class AthleteInfoSerializer(serializers.ModelSerializer[AthleteInfo]):
     class Meta:
         model = AthleteInfo
         fields = ('weight', 'goals', 'user_id')
 
 
-class ChallengeSerializer(ModelSerializer[Challenge]):
+class ChallengeSerializer(serializers.ModelSerializer[Challenge]):
     class Meta:
         model = Challenge
         fields = ('athlete', 'full_name')
 
 
-class PositionSerializer(ModelSerializer[Position]):
+class PositionSerializer(serializers.ModelSerializer[Position]):
     class Meta:
         model = Position
         fields = ('id', 'run', 'latitude', 'longitude')
+
+
+class CollectibleItemSerializer(serializers.ModelSerializer[CollectibleItem]):
+    class Meta:
+        model = CollectibleItem
+        fields = '__all__'
+
+
+class FileUploadSerializer(serializers.Serializer[None]):
+    file = serializers.FileField()

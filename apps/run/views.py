@@ -41,6 +41,9 @@ from rest_framework.filters import (
 from rest_framework.pagination import (
     PageNumberPagination,
 )
+from rest_framework.parsers import (
+    MultiPartParser,
+)
 from rest_framework.response import (
     Response,
 )
@@ -59,6 +62,7 @@ from apps.run.enums import (
 from apps.run.models import (
     AthleteInfo,
     Challenge,
+    CollectibleItem,
     Position,
     Run,
     RunStatus,
@@ -66,9 +70,14 @@ from apps.run.models import (
 from apps.run.serializers import (
     AthleteInfoSerializer,
     ChallengeSerializer,
+    CollectibleItemSerializer,
+    FileUploadSerializer,
     PositionSerializer,
     RunSerializer,
     UserSerializer,
+)
+from apps.run.services import (
+    CollectibleItemService,
 )
 
 
@@ -196,10 +205,13 @@ class StopRunAPIView(APIView):
         ).exists():
             return False
 
-        total_distance = Run.objects.filter(
-            athlete=run.athlete,
-            status=RunStatus.FINISHED,
-        ).aggregate(total_distance=Sum('distance'))['total_distance'] or 0
+        total_distance = (
+            Run.objects.filter(
+                athlete=run.athlete,
+                status=RunStatus.FINISHED,
+            ).aggregate(total_distance=Sum('distance'))['total_distance']
+            or 0
+        )
 
         return total_distance >= _CHALLENGE_DISTANCE
 
@@ -257,3 +269,25 @@ class PositionViewSet(ModelViewSet[Position]):
             raise ValidationError({'status': ['Забег не запущен.']})
 
         super().perform_create(serializer)
+
+
+class CollectibleItemViewSet(ReadOnlyModelViewSet[CollectibleItem]):
+    queryset = CollectibleItem.objects.all()
+    serializer_class = CollectibleItemSerializer
+
+
+class FileUploadView(APIView):
+    parser_classes = (MultiPartParser,)
+
+    def post(self, request: 'Request') -> Response:
+        serializer = FileUploadSerializer(data=request.data)
+        if serializer.is_valid():
+            errors = CollectibleItemService.save_collectible_items(serializer.validated_data['file'])
+
+            return (
+                Response(status=status.HTTP_201_CREATED)
+                if not errors
+                else Response(errors, status=status.HTTP_400_BAD_REQUEST)
+            )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

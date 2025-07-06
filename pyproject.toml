@@ -9,6 +9,7 @@ dependencies = [
     "django-storages==1.14.6",
     "djangorestframework==3.16.0",
     "geopy==2.4.1",
+    "openpyxl==3.1.5",
     "psycopg2-binary==2.9.10",
 ]
 
@@ -79,4 +80,5 @@ dev = [
     "lefthook>=1.11.14",
     "mypy==1.15",
     "ruff>=0.12.1",
+    "types-openpyxl>=3.1.5.20250602",
 ]

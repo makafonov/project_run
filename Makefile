@@ -15,6 +15,9 @@ run:
 migrate:
 	@$(manage) migrate $(ARGS)
 
+makemigrations:
+	@$(manage) makemigrations $(ARGS)
+
 ruff-check:
 	@uv run ruff check $(dirs)
 

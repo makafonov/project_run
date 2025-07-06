@@ -116,3 +116,35 @@ class Position(models.Model):
 
     def __str__(self) -> str:
         return f'Координата забега {self.run_id} - ({self.latitude}, {self.longitude})'
+
+
+class CollectibleItem(models.Model):
+    """Коллекционный предмет."""
+
+    name = models.CharField(
+        verbose_name='Название предмета',
+        max_length=100,
+    )
+    uid = models.CharField(
+        verbose_name='Идентификатор предмета',
+        max_length=100,
+    )
+    latitude = models.FloatField(
+        verbose_name='Широта',
+        validators=(
+            MinValueValidator(-90.0),
+            MaxValueValidator(90.0),
+        ),
+    )
+    longitude = models.FloatField(
+        verbose_name='Долгота',
+        validators=(
+            MinValueValidator(-180.0),
+            MaxValueValidator(180.0),
+        ),
+    )
+    value = models.IntegerField()
+    picture = models.URLField(verbose_name='Ссылка на картинку')
+
+    def __str__(self) -> str:
+        return f'Коллекционный предмет {self.name} ({self.uid})'
