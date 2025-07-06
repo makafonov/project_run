@@ -28,24 +28,24 @@ class CollectibleItemService:
         if not sheet:
             return []
 
-        headers = [header.value.lower() for header in sheet[1] if isinstance(header.value, str)]
-        index = headers.index('url')
-        headers[index] = 'picture'
-
         items = []
         errors = []
         for row in sheet.iter_rows(min_row=2, values_only=True):
-            item = dict(zip(headers, row, strict=True))
+            item = {
+                'name': row[0],
+                'uid': row[1],
+                'value': row[2],
+                'latitude': row[3],
+                'longitude': row[4],
+                'picture': row[5],
+            }
             serializer = CollectibleItemSerializer(data=item)
             if serializer.is_valid():
-                items.append(serializer.validated_data)
+                items.append(CollectibleItem(**serializer.validated_data))
             else:
                 errors.append(row)
 
         if items:
-            CollectibleItem.objects.bulk_create(
-                [CollectibleItem(**item) for item in items],
-                ignore_conflicts=True,
-            )
+            CollectibleItem.objects.bulk_create(items)
 
         return errors
