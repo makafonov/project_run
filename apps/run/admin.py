@@ -6,6 +6,7 @@ from apps.run.models import (
     AthleteInfo,
     Challenge,
     CollectibleItem,
+    Position,
     Run,
 )
 
@@ -14,3 +15,4 @@ admin.site.register(Challenge)
 admin.site.register(CollectibleItem)
 admin.site.register(Run)
 admin.site.register(AthleteInfo)
+admin.site.register(Position)

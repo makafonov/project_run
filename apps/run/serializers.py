@@ -53,7 +53,7 @@ class UserSerializer(serializers.ModelSerializer['UserModel']):
 
     class Meta:
         model = User
-        fields = ('id', 'date_joined', 'username', 'last_name', 'first_name', 'type', 'runs_finished')
+        fields: tuple[str, ...] = ('id', 'date_joined', 'username', 'last_name', 'first_name', 'type', 'runs_finished')
 
     def get_type(self, obj: 'UserModel') -> str:
         if obj.is_staff:
@@ -83,8 +83,15 @@ class PositionSerializer(serializers.ModelSerializer[Position]):
 class CollectibleItemSerializer(serializers.ModelSerializer[CollectibleItem]):
     class Meta:
         model = CollectibleItem
-        fields = '__all__'
+        fields = ('id', 'name', 'uid', 'latitude', 'longitude', 'picture', 'value')
 
 
 class FileUploadSerializer(serializers.Serializer[None]):
     file = serializers.FileField()
+
+
+class UserWithItemsSerializer(UserSerializer):
+    items = CollectibleItemSerializer(many=True)
+
+    class Meta(UserSerializer.Meta):
+        fields = (*UserSerializer.Meta.fields, 'items')

@@ -75,6 +75,7 @@ from apps.run.serializers import (
     PositionSerializer,
     RunSerializer,
     UserSerializer,
+    UserWithItemsSerializer,
 )
 from apps.run.services import (
     CollectibleItemService,
@@ -144,6 +145,12 @@ class UserViewSet(ReadOnlyModelViewSet['UserModel']):
         return qs.annotate(
             runs_finished=Count('runs', filter=Q(runs__status=RunStatus.FINISHED)),
         )
+
+    def get_serializer_class(self) -> type['BaseSerializer[Any]']:
+        if self.action == 'retrieve':
+            return UserWithItemsSerializer
+
+        return super().get_serializer_class()
 
 
 class StartRunAPIView(APIView):
@@ -267,6 +274,12 @@ class PositionViewSet(ModelViewSet[Position]):
     def perform_create(self, serializer: 'BaseSerializer[Position]') -> None:
         if serializer.validated_data['run'].status != RunStatus.IN_PROGRESS:
             raise ValidationError({'status': ['Забег не запущен.']})
+
+        neighbors = CollectibleItemService.get_neighbor_items(
+            serializer.validated_data['latitude'], serializer.validated_data['longitude']
+        )
+        for neighbor in neighbors:
+            serializer.validated_data['run'].athlete.items.add(neighbor)
 
         super().perform_create(serializer)
 

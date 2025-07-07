@@ -44,7 +44,7 @@ class Run(models.Model):
     )
 
     def __str__(self) -> str:
-        return f'Забег {self.id} от {self.created_at}'
+        return f'Забег {self.id} ({self.athlete}) от {self.created_at}'
 
 
 class AthleteInfo(models.Model):
@@ -145,6 +145,11 @@ class CollectibleItem(models.Model):
     )
     value = models.IntegerField()
     picture = models.URLField(verbose_name='Ссылка на картинку')
+    athlete = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name='items',
+        verbose_name='Атлет',
+    )
 
     def __str__(self) -> str:
         return f'Коллекционный предмет {self.name} ({self.uid})'
