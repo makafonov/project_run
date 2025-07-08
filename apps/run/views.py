@@ -11,6 +11,8 @@ from django.contrib.auth import (
 )
 from django.db.models import (
     Count,
+    Max,
+    Min,
     Q,
     QuerySet,
     Sum,
@@ -186,7 +188,20 @@ class StopRunAPIView(APIView):
         run.status = RunStatus.FINISHED
         run.distance = self._get_distance(positions=run.positions.all())
 
-        run.save(update_fields=['status', 'distance'])
+        run_ = (
+            Run.objects.filter(id=run.id)
+            .annotate(
+                run_time=Max('positions__date_time') - Min('positions__date_time'),
+            )
+            .values('run_time')
+            .first()
+        )
+        fields = ['status', 'distance']
+        if run_:
+            run.run_time_seconds = run_['run_time'].seconds
+            fields.append('run_time_seconds')
+
+        run.save(update_fields=fields)
 
         if self._is_run_count_challenge_completed(run):
             Challenge.objects.create(athlete=run.athlete, full_name='Сделай 10 Забегов!')

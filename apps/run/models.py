@@ -42,6 +42,10 @@ class Run(models.Model):
         verbose_name='Дистанция забега',
         null=True,
     )
+    run_time_seconds = models.IntegerField(
+        verbose_name='Общее время забега в секундах',
+        null=True,
+    )
 
     def __str__(self) -> str:
         return f'Забег {self.id} ({self.athlete}) от {self.created_at}'
@@ -113,6 +117,7 @@ class Position(models.Model):
             MaxValueValidator(180.0),
         ),
     )
+    date_time = models.DateTimeField(null=True)
 
     def __str__(self) -> str:
         return f'Координата забега {self.run_id} - ({self.latitude}, {self.longitude})'
