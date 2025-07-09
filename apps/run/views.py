@@ -1,6 +1,10 @@
+from datetime import (
+    timedelta,
+)
 from typing import (
     TYPE_CHECKING,
     Any,
+    TypedDict,
 )
 
 from django.conf import (
@@ -88,6 +92,9 @@ if TYPE_CHECKING:
     from django.contrib.auth.models import (
         User as UserModel,
     )
+    from django_stubs_ext import (
+        WithAnnotations,
+    )
     from rest_framework.request import (
         Request,
     )
@@ -174,9 +181,18 @@ class StartRunAPIView(APIView):
         return Response(serializer.data)
 
 
+class RunWithTime(TypedDict):
+    time: timedelta | None
+
+
 class StopRunAPIView(APIView):
     def post(self, _: 'Request', run_id: int) -> Response:
-        run = get_object_or_404(Run, id=run_id)
+        run: WithAnnotations[Run, RunWithTime] = get_object_or_404(
+            Run.objects.select_related('athlete').annotate(
+                time=Max('positions__date_time') - Min('positions__date_time'),
+            ),
+            id=run_id,
+        )
         if run.status != RunStatus.IN_PROGRESS:
             return Response(
                 {
@@ -188,17 +204,9 @@ class StopRunAPIView(APIView):
         run.status = RunStatus.FINISHED
         run.distance = self._get_distance(positions=run.positions.all())
 
-        run_ = (
-            Run.objects.filter(id=run.id)
-            .annotate(
-                run_time=Max('positions__date_time') - Min('positions__date_time'),
-            )
-            .values('run_time')
-            .first()
-        )
         fields = ['status', 'distance']
-        if run_:
-            run.run_time_seconds = run_['run_time'].seconds
+        if run.time:
+            run.run_time_seconds = run.time.seconds
             fields.append('run_time_seconds')
 
         run.save(update_fields=fields)

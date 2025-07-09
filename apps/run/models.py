@@ -45,6 +45,7 @@ class Run(models.Model):
     run_time_seconds = models.IntegerField(
         verbose_name='Общее время забега в секундах',
         null=True,
+        blank=True,
     )
 
     def __str__(self) -> str:
