@@ -323,7 +323,7 @@ class PositionViewSet(ModelViewSet[Position]):
                 current_distance / (serializer.validated_data['date_time'] - prev_position.date_time).seconds, 2
             )
             serializer.validated_data['speed'] = speed
-            serializer.validated_data['distance'] = current_distance + prev_position.distance
+            serializer.validated_data['distance'] = current_distance / 1000 + prev_position.distance
         else:
             serializer.validated_data['speed'] = 0
             serializer.validated_data['distance'] = 0
