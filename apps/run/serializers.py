@@ -79,7 +79,7 @@ class PositionSerializer(serializers.ModelSerializer[Position]):
 
     class Meta:
         model = Position
-        fields = ('id', 'run', 'latitude', 'longitude', 'date_time')
+        fields = ('id', 'run', 'latitude', 'longitude', 'date_time', 'speed', 'distance')
 
 
 class CollectibleItemSerializer(serializers.ModelSerializer[CollectibleItem]):
