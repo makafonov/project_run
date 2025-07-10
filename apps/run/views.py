@@ -328,6 +328,9 @@ class PositionViewSet(ModelViewSet[Position]):
 
             serializer.validated_data['speed'] = speed
             serializer.validated_data['distance'] = current_distance
+        else:
+            serializer.validated_data['speed'] = 0
+            serializer.validated_data['distance'] = 0
 
         super().perform_create(serializer)
 
