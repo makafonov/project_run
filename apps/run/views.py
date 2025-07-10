@@ -319,7 +319,7 @@ class PositionViewSet(ModelViewSet[Position]):
                 distance(
                     (serializer.validated_data['latitude'], serializer.validated_data['longitude']),
                     (prev_position.latitude, prev_position.longitude),
-                ).m,
+                ).km,
                 2,
             )
             speed = round(
@@ -327,7 +327,7 @@ class PositionViewSet(ModelViewSet[Position]):
             )
 
             serializer.validated_data['speed'] = speed
-            serializer.validated_data['distance'] = current_distance
+            serializer.validated_data['distance'] = current_distance + prev_position.distance
         else:
             serializer.validated_data['speed'] = 0
             serializer.validated_data['distance'] = 0
