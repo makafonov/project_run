@@ -315,17 +315,13 @@ class PositionViewSet(ModelViewSet[Position]):
 
         prev_position = Position.objects.filter(run=serializer.validated_data['run']).order_by('-date_time').first()
         if prev_position:
-            current_distance = round(
-                distance(
+            current_distance = distance(
                     (serializer.validated_data['latitude'], serializer.validated_data['longitude']),
                     (prev_position.latitude, prev_position.longitude),
-                ).km,
-                2,
-            )
+                ).m
             speed = round(
                 current_distance / (serializer.validated_data['date_time'] - prev_position.date_time).seconds, 2
             )
-
             serializer.validated_data['speed'] = speed
             serializer.validated_data['distance'] = current_distance + prev_position.distance
         else:
