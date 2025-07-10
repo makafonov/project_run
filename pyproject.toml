@@ -64,10 +64,6 @@ plugins = [
 strict = true
 show_error_context = true
 
-# [[tool.mypy.overrides]]
-# module = ["geopy.distance.*"]
-# follow_untyped_imports = true
-
 [tool.django-stubs]
 django_settings_module = "project_run.settings.local"
 

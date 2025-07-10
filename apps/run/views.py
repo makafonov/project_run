@@ -204,7 +204,16 @@ class StopRunAPIView(APIView):
         run.status = RunStatus.FINISHED
         run.distance = self._get_distance(positions=run.positions.all())
 
-        fields = ['status', 'distance']
+        speed = .0
+        count = 0
+        for position in run.positions.all():
+            if position.speed:
+                count += 1
+                speed += position.speed
+        if count:
+            run.speed = round(speed / count, 2)
+
+        fields = ['status', 'distance', 'speed']
         if run.time:
             run.run_time_seconds = run.time.seconds
             fields.append('run_time_seconds')
@@ -298,11 +307,27 @@ class PositionViewSet(ModelViewSet[Position]):
         if serializer.validated_data['run'].status != RunStatus.IN_PROGRESS:
             raise ValidationError({'status': ['Забег не запущен.']})
 
-        neighbors = CollectibleItemService.get_neighbor_items(
+        items = CollectibleItemService.get_neighbor_items(
             serializer.validated_data['latitude'], serializer.validated_data['longitude']
         )
-        for neighbor in neighbors:
-            serializer.validated_data['run'].athlete.items.add(neighbor)
+        for item in items:
+            serializer.validated_data['run'].athlete.items.add(item)
+
+        prev_position = Position.objects.filter(run=serializer.validated_data['run']).order_by('-date_time').first()
+        if prev_position:
+            current_distance = round(
+                distance(
+                    (serializer.validated_data['latitude'], serializer.validated_data['longitude']),
+                    (prev_position.latitude, prev_position.longitude),
+                ).m,
+                2,
+            )
+            speed = round(
+                current_distance / (serializer.validated_data['date_time'] - prev_position.date_time).seconds, 2
+            )
+
+            serializer.validated_data['speed'] = speed
+            serializer.validated_data['distance'] = current_distance
 
         super().perform_create(serializer)
 

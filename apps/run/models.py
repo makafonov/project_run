@@ -47,6 +47,11 @@ class Run(models.Model):
         null=True,
         blank=True,
     )
+    speed = models.FloatField(
+        verbose_name='Средняя скорость всех позиций',
+        null=True,
+        blank=True,
+    )
 
     def __str__(self) -> str:
         return f'Забег {self.id} ({self.athlete}) от {self.created_at}'
@@ -119,6 +124,16 @@ class Position(models.Model):
         ),
     )
     date_time = models.DateTimeField(null=True)
+    speed = models.FloatField(
+        verbose_name='Скорость в м/с относительно предыдущей позиции',
+        null=True,
+        blank=True,
+    )
+    distance = models.FloatField(
+        verbose_name='Расстояние с учетом предыдущих позиций',
+        null=True,
+        blank=True,
+    )
 
     def __str__(self) -> str:
         return f'Координата забега {self.run_id} - ({self.latitude}, {self.longitude})'
