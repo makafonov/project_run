@@ -207,7 +207,7 @@ class StopRunAPIView(APIView):
         speed = .0
         count = 0
         for position in run.positions.all():
-            if position.speed:
+            if position.speed is not None:
                 count += 1
                 speed += position.speed
         if count:
