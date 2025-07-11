@@ -108,8 +108,8 @@ User = get_user_model()
 _CHALLENGE_RUN_COUNT = 10
 _CHALLENGE_DISTANCE = 50
 _CHALLENGE_DISTANCE_TEXT = 'Пробеги 50 километров!'
-_CHALLENGE_SPEED_DISTANCE = 2
-_CHALLENGE_SPEED_TIME = 10
+_CHALLENGE_SPEED_DISTANCE = 2000
+_CHALLENGE_SPEED_TIME = 600
 _MIN_POSITION_COUNT = 2
 
 
@@ -234,12 +234,12 @@ class StopRunAPIView(APIView):
         return Response(serializer.data)
 
     def _is_speed_challenge_completed(self, run: Run) -> bool:
-        if not (run.run_time_seconds and run.distance):
+        if not (run.speed and run.distance):
             return False
 
         return (
-            run.distance >= _CHALLENGE_SPEED_DISTANCE
-            and run.distance / run.run_time_seconds * 60 <= _CHALLENGE_SPEED_TIME
+            run.distance >= _CHALLENGE_SPEED_DISTANCE / 1000
+            and run.speed >= _CHALLENGE_SPEED_DISTANCE / _CHALLENGE_SPEED_TIME
         )
 
     def _is_run_count_challenge_completed(self, run: Run) -> bool:
