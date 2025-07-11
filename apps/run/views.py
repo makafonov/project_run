@@ -108,6 +108,8 @@ User = get_user_model()
 _CHALLENGE_RUN_COUNT = 10
 _CHALLENGE_DISTANCE = 50
 _CHALLENGE_DISTANCE_TEXT = 'Пробеги 50 километров!'
+_CHALLENGE_SPEED_DISTANCE = 2
+_CHALLENGE_SPEED_TIME = 10
 _MIN_POSITION_COUNT = 2
 
 
@@ -204,7 +206,7 @@ class StopRunAPIView(APIView):
         run.status = RunStatus.FINISHED
         run.distance = self._get_distance(positions=run.positions.all())
 
-        speed = .0
+        speed = 0.0
         count = 0
         for position in run.positions.all():
             if position.speed is not None:
@@ -224,10 +226,21 @@ class StopRunAPIView(APIView):
             Challenge.objects.create(athlete=run.athlete, full_name='Сделай 10 Забегов!')
         if self._is_distance_challenge_completed(run):
             Challenge.objects.create(athlete=run.athlete, full_name=_CHALLENGE_DISTANCE_TEXT)
+        if self._is_speed_challenge_completed(run):
+            Challenge.objects.create(athlete=run.athlete, full_name='2 километра за 10 минут!')
 
         serializer = RunSerializer(run)
 
         return Response(serializer.data)
+
+    def _is_speed_challenge_completed(self, run: Run) -> bool:
+        if not (run.run_time_seconds and run.distance):
+            return False
+
+        return (
+            run.distance >= _CHALLENGE_SPEED_DISTANCE
+            and run.distance / run.run_time_seconds * 60 <= _CHALLENGE_SPEED_TIME
+        )
 
     def _is_run_count_challenge_completed(self, run: Run) -> bool:
         finished_run_count = Run.objects.filter(
@@ -316,9 +329,9 @@ class PositionViewSet(ModelViewSet[Position]):
         prev_position = Position.objects.filter(run=serializer.validated_data['run']).order_by('-date_time').first()
         if prev_position:
             current_distance = distance(
-                    (serializer.validated_data['latitude'], serializer.validated_data['longitude']),
-                    (prev_position.latitude, prev_position.longitude),
-                ).m
+                (serializer.validated_data['latitude'], serializer.validated_data['longitude']),
+                (prev_position.latitude, prev_position.longitude),
+            ).m
             speed = round(
                 current_distance / (serializer.validated_data['date_time'] - prev_position.date_time).seconds, 2
             )
