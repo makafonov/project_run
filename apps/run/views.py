@@ -1,14 +1,10 @@
 import itertools
-from datetime import (
-    timedelta,
-)
 from operator import (
     itemgetter,
 )
 from typing import (
     TYPE_CHECKING,
     Any,
-    TypedDict,
 )
 
 from django.conf import (
@@ -67,30 +63,21 @@ from rest_framework.viewsets import (
     ReadOnlyModelViewSet,
 )
 
+from apps.run import (
+    serializers,
+)
 from apps.run.enums import (
     UserType,
 )
 from apps.run.models import (
     AthleteInfo,
     Challenge,
+    ChallengeType,
     CollectibleItem,
     Position,
     Run,
     RunStatus,
     Subscribe,
-)
-from apps.run.serializers import (
-    AthleteInfoSerializer,
-    AthleteWithItemsSerializer,
-    ChallengeSerializer,
-    ChallengeSummarySerializer,
-    CoachWithItemsSerializer,
-    CollectibleItemSerializer,
-    FileUploadSerializer,
-    PositionSerializer,
-    RunSerializer,
-    SubscribeToCoachSerializer,
-    UserSerializer,
 )
 from apps.run.services import (
     CollectibleItemService,
@@ -111,12 +98,15 @@ if TYPE_CHECKING:
         BaseSerializer,
     )
 
+    from apps.run.types import (
+        RunWithTime,
+    )
+
 
 User = get_user_model()
 
-_CHALLENGE_RUN_COUNT = 10
+_CHALLENGE_RUN_COUNT = 2
 _CHALLENGE_DISTANCE = 50
-_CHALLENGE_DISTANCE_TEXT = 'Пробеги 50 километров!'
 _CHALLENGE_SPEED_DISTANCE = 2
 _CHALLENGE_SPEED_TIME = 600
 _MIN_POSITION_COUNT = 2
@@ -140,7 +130,7 @@ def company_details(_: 'Request') -> Response:
 
 class RunViewSet(ModelViewSet[Run]):
     queryset = Run.objects.select_related('athlete').all()
-    serializer_class = RunSerializer
+    serializer_class = serializers.RunSerializer
     filter_backends = (DjangoFilterBackend, OrderingFilter)
     pagination_class = Pagination
     filterset_fields = ('status', 'athlete')
@@ -149,7 +139,7 @@ class RunViewSet(ModelViewSet[Run]):
 
 class UserViewSet(ReadOnlyModelViewSet['UserModel']):
     queryset = User.objects.filter(is_superuser=False)
-    serializer_class = UserSerializer
+    serializer_class = serializers.UserSerializer
     filter_backends = (SearchFilter, OrderingFilter)
     pagination_class = Pagination
     search_fields = ('first_name', 'last_name')
@@ -170,9 +160,9 @@ class UserViewSet(ReadOnlyModelViewSet['UserModel']):
         if self.action == 'retrieve':
             user = self.get_object()
             if user.is_staff:
-                return CoachWithItemsSerializer
+                return serializers.CoachWithItemsSerializer
 
-            return AthleteWithItemsSerializer
+            return serializers.AthleteWithItemsSerializer
 
         return super().get_serializer_class()
 
@@ -191,13 +181,9 @@ class StartRunAPIView(APIView):
         run.status = RunStatus.IN_PROGRESS
         run.save(update_fields=['status'])
 
-        serializer = RunSerializer(run)
+        serializer = serializers.RunSerializer(run)
 
         return Response(serializer.data)
-
-
-class RunWithTime(TypedDict):
-    time: timedelta | None
 
 
 class StopRunAPIView(APIView):
@@ -236,13 +222,13 @@ class StopRunAPIView(APIView):
         run.save(update_fields=fields)
 
         if self._is_run_count_challenge_completed(run):
-            Challenge.objects.create(athlete=run.athlete, full_name='Сделай 10 Забегов!')
+            Challenge.objects.create(athlete=run.athlete, full_name=ChallengeType.COUNT)
         if self._is_distance_challenge_completed(run):
-            Challenge.objects.create(athlete=run.athlete, full_name=_CHALLENGE_DISTANCE_TEXT)
+            Challenge.objects.create(athlete=run.athlete, full_name=ChallengeType.DISTANCE)
         if self._is_speed_challenge_completed(run):
-            Challenge.objects.create(athlete=run.athlete, full_name='2 километра за 10 минут!')
+            Challenge.objects.create(athlete=run.athlete, full_name=ChallengeType.SPEED)
 
-        serializer = RunSerializer(run)
+        serializer = serializers.RunSerializer(run)
 
         return Response(serializer.data)
 
@@ -263,7 +249,7 @@ class StopRunAPIView(APIView):
     def _is_distance_challenge_completed(self, run: Run) -> bool:
         if Challenge.objects.filter(
             athlete=run.athlete,
-            full_name=_CHALLENGE_DISTANCE_TEXT,
+            full_name=ChallengeType.DISTANCE,
         ).exists():
             return False
 
@@ -296,7 +282,7 @@ class AtheleteInfoViewSet(
     GenericViewSet[AthleteInfo],
 ):
     queryset = AthleteInfo.objects.all()
-    serializer_class = AthleteInfoSerializer
+    serializer_class = serializers.AthleteInfoSerializer
     http_method_names = ('get', 'put')
     lookup_field = 'user_id'
 
@@ -315,14 +301,14 @@ class AtheleteInfoViewSet(
 
 class ChallengeViewSet(mixins.ListModelMixin, GenericViewSet[Challenge]):
     queryset = Challenge.objects.all()
-    serializer_class = ChallengeSerializer
+    serializer_class = serializers.ChallengeSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('athlete',)
 
 
 class PositionViewSet(ModelViewSet[Position]):
     queryset = Position.objects.all()
-    serializer_class = PositionSerializer
+    serializer_class = serializers.PositionSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('run',)
 
@@ -356,14 +342,14 @@ class PositionViewSet(ModelViewSet[Position]):
 
 class CollectibleItemViewSet(ReadOnlyModelViewSet[CollectibleItem]):
     queryset = CollectibleItem.objects.all()
-    serializer_class = CollectibleItemSerializer
+    serializer_class = serializers.CollectibleItemSerializer
 
 
 class FileUploadView(APIView):
     parser_classes = (MultiPartParser,)
 
     def post(self, request: 'Request') -> Response:
-        serializer = FileUploadSerializer(data=request.data)
+        serializer = serializers.FileUploadSerializer(data=request.data)
         if serializer.is_valid():
             errors = CollectibleItemService.save_collectible_items(serializer.validated_data['file'])
 
@@ -373,7 +359,7 @@ class FileUploadView(APIView):
 
 
 class SubscribeToCoachAPIView(generics.CreateAPIView[Subscribe]):
-    serializer_class = SubscribeToCoachSerializer
+    serializer_class = serializers.SubscribeToCoachSerializer
 
     def get_serializer(self, *args: Any, **kwargs: Any) -> 'BaseSerializer[Subscribe]':  # noqa: ANN401
         kwargs['data']['coach'] = self.kwargs['coach_id']
@@ -421,4 +407,4 @@ class ChallengeSummaryAPIView(APIView):
                 }
             )
 
-        return Response(ChallengeSummarySerializer(grouped_challenges, many=True).data)  # type: ignore[arg-type]
+        return Response(serializers.ChallengeSummarySerializer(grouped_challenges, many=True).data)  # type: ignore[arg-type]

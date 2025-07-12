@@ -1,3 +1,6 @@
+from datetime import (
+    timedelta,
+)
 from typing import (
     TypedDict,
 )
@@ -13,3 +16,7 @@ class Athlete(TypedDict):
 class Challenge(TypedDict):
     full_name: str
     athletes: list[Athlete]
+
+
+class RunWithTime(TypedDict):
+    time: timedelta | None

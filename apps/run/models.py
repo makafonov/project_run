@@ -16,6 +16,12 @@ class RunStatus(models.TextChoices):
     FINISHED = 'finished'
 
 
+class ChallengeType(models.TextChoices):
+    DISTANCE = 'Пробеги 50 километров!'
+    COUNT = 'Сделай 10 Забегов!'
+    SPEED = '2 километра за 10 минут!'
+
+
 class Run(models.Model):
     """Забег."""
 
@@ -93,6 +99,7 @@ class Challenge(models.Model):
     )
     full_name = models.CharField(
         max_length=100,
+        choices=ChallengeType,
         verbose_name='Название челленджа',
     )
 
