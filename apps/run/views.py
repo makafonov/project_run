@@ -379,4 +379,12 @@ class SubscribeToCoachAPIView(generics.CreateAPIView[Subscribe]):
         coach_id = self.kwargs['coach_id']
         get_object_or_404(User, id=coach_id)
 
+        if Subscribe.objects.filter(athlete_id=request.data['athlete']).exists():
+            return Response(
+                {
+                    'detail': 'Подписку можно оформить только один раз.',
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         return super().create(request, *args, **kwargs)
