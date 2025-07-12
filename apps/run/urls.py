@@ -6,33 +6,25 @@ from rest_framework.routers import (
     DefaultRouter,
 )
 
-from apps.run.views import (
-    AtheleteInfoViewSet,
-    ChallengeViewSet,
-    CollectibleItemViewSet,
-    FileUploadView,
-    PositionViewSet,
-    RunViewSet,
-    StartRunAPIView,
-    StopRunAPIView,
-    UserViewSet,
-    company_details,
+from apps.run import (
+    views,
 )
 
 
 router = DefaultRouter()
-router.register('runs', RunViewSet)
-router.register('users', UserViewSet)
-router.register('athlete_info', AtheleteInfoViewSet)
-router.register('challenges', ChallengeViewSet)
-router.register('positions', PositionViewSet)
-router.register('collectible_item', CollectibleItemViewSet)
+router.register('runs', views.RunViewSet)
+router.register('users', views.UserViewSet)
+router.register('athlete_info', views.AtheleteInfoViewSet)
+router.register('challenges', views.ChallengeViewSet)
+router.register('positions', views.PositionViewSet)
+router.register('collectible_item', views.CollectibleItemViewSet)
 
 
 urlpatterns = [
-    path('company_details/', company_details),
-    path('runs/<int:run_id>/start/', StartRunAPIView.as_view(), name='start-run'),
-    path('runs/<int:run_id>/stop/', StopRunAPIView.as_view(), name='stop-run'),
-    path('upload_file/', FileUploadView.as_view()),
+    path('company_details/', views.company_details),
+    path('runs/<int:run_id>/start/', views.StartRunAPIView.as_view(), name='start-run'),
+    path('runs/<int:run_id>/stop/', views.StopRunAPIView.as_view(), name='stop-run'),
+    path('upload_file/', views.FileUploadView.as_view()),
+    path('subscribe_to_coach/<int:coach_id>/', views.SubscribeToCoachAPIView.as_view()),
     path('', include(router.urls)),
 ]

@@ -1,5 +1,6 @@
 from typing import (
     TYPE_CHECKING,
+    Any,
 )
 
 from django.contrib.auth import (
@@ -11,6 +12,9 @@ from rest_framework import (
 from rest_framework.fields import (
     SerializerMethodField,
 )
+from rest_framework.relations import (
+    SlugRelatedField,
+)
 
 from apps.run.enums import (
     UserType,
@@ -21,6 +25,7 @@ from apps.run.models import (
     CollectibleItem,
     Position,
     Run,
+    Subscribe,
 )
 
 
@@ -97,3 +102,42 @@ class UserWithItemsSerializer(UserSerializer):
 
     class Meta(UserSerializer.Meta):
         fields = (*UserSerializer.Meta.fields, 'items')
+
+
+class AthleteWithItemsSerializer(UserWithItemsSerializer):
+    coach = serializers.SerializerMethodField()
+
+    class Meta(UserWithItemsSerializer.Meta):
+        fields = (*UserWithItemsSerializer.Meta.fields, 'coach')
+
+    def get_coach(self, obj: 'UserModel') -> int | None:
+        subscription = obj.subscriptions.first()  # type: ignore[attr-defined]
+
+        return subscription.coach_id if subscription else None
+
+
+class CoachWithItemsSerializer(UserWithItemsSerializer):
+    athletes: SlugRelatedField[Subscribe] = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        source='subscribers',
+        slug_field='athlete_id',
+    )
+
+    class Meta(UserWithItemsSerializer.Meta):
+        fields = (*UserWithItemsSerializer.Meta.fields, 'athletes')
+
+
+class SubscribeToCoachSerializer(serializers.ModelSerializer[Subscribe]):
+    class Meta:
+        model = Subscribe
+        fields = ('athlete', 'coach')
+
+    def validate(self, attrs: Any) -> Any:  # noqa: ANN401
+        if not attrs['coach'].is_staff:
+            raise serializers.ValidationError({'coach': 'Можно подписываться только на тренеров.'})
+
+        if attrs['athlete'].is_staff:
+            raise serializers.ValidationError({'athlete': 'Подписываться могут только атлеты.'})
+
+        return super().validate(attrs)

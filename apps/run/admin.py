@@ -8,6 +8,7 @@ from apps.run.models import (
     CollectibleItem,
     Position,
     Run,
+    Subscribe,
 )
 
 
@@ -16,3 +17,4 @@ admin.site.register(CollectibleItem)
 admin.site.register(Run)
 admin.site.register(AthleteInfo)
 admin.site.register(Position)
+admin.site.register(Subscribe)

@@ -18,6 +18,9 @@ migrate:
 makemigrations:
 	@$(manage) makemigrations $(ARGS)
 
+showmigrations:
+	@$(manage) showmigrations $(ARGS)
+
 ruff-check:
 	@uv run ruff check $(dirs)
 

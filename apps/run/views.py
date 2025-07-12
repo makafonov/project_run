@@ -31,6 +31,7 @@ from geopy.distance import (  # type: ignore[import-untyped]
     distance,
 )
 from rest_framework import (
+    generics,
     mixins,
     status,
 )
@@ -72,16 +73,19 @@ from apps.run.models import (
     Position,
     Run,
     RunStatus,
+    Subscribe,
 )
 from apps.run.serializers import (
     AthleteInfoSerializer,
+    AthleteWithItemsSerializer,
     ChallengeSerializer,
+    CoachWithItemsSerializer,
     CollectibleItemSerializer,
     FileUploadSerializer,
     PositionSerializer,
     RunSerializer,
+    SubscribeToCoachSerializer,
     UserSerializer,
-    UserWithItemsSerializer,
 )
 from apps.run.services import (
     CollectibleItemService,
@@ -159,7 +163,11 @@ class UserViewSet(ReadOnlyModelViewSet['UserModel']):
 
     def get_serializer_class(self) -> type['BaseSerializer[Any]']:
         if self.action == 'retrieve':
-            return UserWithItemsSerializer
+            user = self.get_object()
+            if user.is_staff:
+                return CoachWithItemsSerializer
+
+            return AthleteWithItemsSerializer
 
         return super().get_serializer_class()
 
@@ -237,10 +245,7 @@ class StopRunAPIView(APIView):
         if not (run.run_time_seconds and run.distance):
             return False
 
-        return (
-            run.distance >= _CHALLENGE_SPEED_DISTANCE
-            and run.run_time_seconds <= _CHALLENGE_SPEED_TIME
-        )
+        return run.distance >= _CHALLENGE_SPEED_DISTANCE and run.run_time_seconds <= _CHALLENGE_SPEED_TIME
 
     def _is_run_count_challenge_completed(self, run: Run) -> bool:
         finished_run_count = Run.objects.filter(
@@ -360,3 +365,18 @@ class FileUploadView(APIView):
             return Response(errors, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SubscribeToCoachAPIView(generics.CreateAPIView[Subscribe]):
+    serializer_class = SubscribeToCoachSerializer
+
+    def get_serializer(self, *args: Any, **kwargs: Any) -> 'BaseSerializer[Subscribe]':  # noqa: ANN401
+        kwargs['data']['coach'] = self.kwargs['coach_id']
+
+        return super().get_serializer(*args, **kwargs)
+
+    def create(self, request: 'Request', *args: Any, **kwargs: Any) -> Response:  # noqa: ANN401
+        coach_id = self.kwargs['coach_id']
+        get_object_or_404(User, id=coach_id)
+
+        return super().create(request, *args, **kwargs)

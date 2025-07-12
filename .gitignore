@@ -7,3 +7,4 @@ db.sqlite3
 
 .python-version
 .cache/
+.vscode/

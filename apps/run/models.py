@@ -174,3 +174,26 @@ class CollectibleItem(models.Model):
 
     def __str__(self) -> str:
         return f'Коллекционный предмет {self.name} ({self.uid})'
+
+
+class Subscribe(models.Model):
+    """Подписка."""
+
+    athlete = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='subscriptions',
+        verbose_name='Атлет',
+    )
+    coach = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='subscribers',
+        verbose_name='Тренер',
+    )
+
+    class Meta:
+        constraints = (models.UniqueConstraint(fields=['athlete', 'coach'], name='unique_athlete_coach'),)
+
+    def __str__(self) -> str:
+        return f'Подписка атлета {self.athlete_id} на тренера {self.coach_id}'
