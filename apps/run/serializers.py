@@ -16,6 +16,9 @@ from rest_framework.relations import (
     SlugRelatedField,
 )
 
+from apps.run import (
+    types,
+)
 from apps.run.enums import (
     UserType,
 )
@@ -141,3 +144,24 @@ class SubscribeToCoachSerializer(serializers.ModelSerializer[Subscribe]):
             raise serializers.ValidationError({'athlete': 'Подписываться могут только атлеты.'})
 
         return super().validate(attrs)
+
+
+class _AthleteSerializer(serializers.Serializer[types.Athlete]):
+    id = serializers.IntegerField(source='athlete__id')
+    full_name = serializers.SerializerMethodField()
+    username = serializers.CharField(source='athlete__username')
+
+    def get_full_name(self, obj: types.Athlete) -> str:
+        return f'{obj["athlete__first_name"]} {obj["athlete__last_name"]}'
+
+    class Meta:
+        model = User
+        fields = ('id', 'full_name', 'username')
+
+
+class ChallengeSummarySerializer(serializers.Serializer[types.Challenge]):
+    name_to_display = serializers.CharField(source='full_name')
+    athletes = _AthleteSerializer(many=True)
+
+    class Meta:
+        fields = ('name_to_display', 'athletes')

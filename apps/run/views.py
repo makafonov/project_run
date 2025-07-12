@@ -1,5 +1,9 @@
+import itertools
 from datetime import (
     timedelta,
+)
+from operator import (
+    itemgetter,
 )
 from typing import (
     TYPE_CHECKING,
@@ -79,6 +83,7 @@ from apps.run.serializers import (
     AthleteInfoSerializer,
     AthleteWithItemsSerializer,
     ChallengeSerializer,
+    ChallengeSummarySerializer,
     CoachWithItemsSerializer,
     CollectibleItemSerializer,
     FileUploadSerializer,
@@ -391,3 +396,29 @@ class SubscribeToCoachAPIView(generics.CreateAPIView[Subscribe]):
         response.status_code = status.HTTP_200_OK
 
         return response
+
+
+class ChallengeSummaryAPIView(APIView):
+    def get(self, _: 'Request') -> Response:
+        challenges = (
+            Challenge.objects.select_related('athlete')
+            .order_by('full_name')
+            .values(
+                'full_name',
+                'athlete__id',
+                'athlete__first_name',
+                'athlete__last_name',
+                'athlete__username',
+            )
+        )
+
+        grouped_challenges = []
+        for key, group in itertools.groupby(challenges, key=itemgetter('full_name')):
+            grouped_challenges.append(
+                {
+                    'full_name': key,
+                    'athletes': list(group),
+                }
+            )
+
+        return Response(ChallengeSummarySerializer(grouped_challenges, many=True).data)  # type: ignore[arg-type]

@@ -26,5 +26,6 @@ urlpatterns = [
     path('runs/<int:run_id>/stop/', views.StopRunAPIView.as_view(), name='stop-run'),
     path('upload_file/', views.FileUploadView.as_view()),
     path('subscribe_to_coach/<int:coach_id>/', views.SubscribeToCoachAPIView.as_view()),
+    path('challenges_summary/', views.ChallengeSummaryAPIView.as_view()),
     path('', include(router.urls)),
 ]
