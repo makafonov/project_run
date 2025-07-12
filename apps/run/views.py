@@ -387,4 +387,7 @@ class SubscribeToCoachAPIView(generics.CreateAPIView[Subscribe]):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        return super().create(request, *args, **kwargs)
+        response = super().create(request, *args, **kwargs)
+        response.status_code = status.HTTP_200_OK
+
+        return response
