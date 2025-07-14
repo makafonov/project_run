@@ -160,7 +160,7 @@ class UserViewSet(ReadOnlyModelViewSet['UserModel']):
 
     def get_serializer_class(self) -> type['BaseSerializer[Any]']:
         if self.action == 'retrieve':
-            user = self.get_object()
+            user = self.get_object()  # additional sql query
             if user.is_staff:
                 return serializers.CoachWithItemsSerializer
 
