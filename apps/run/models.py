@@ -198,6 +198,14 @@ class Subscribe(models.Model):
         related_name='subscribers',
         verbose_name='Тренер',
     )
+    rating = models.IntegerField(
+        verbose_name='Рейтинг',
+        null=True,
+        validators=(
+            MinValueValidator(1),
+            MaxValueValidator(5),
+        ),
+    )
 
     class Meta:
         constraints = (models.UniqueConstraint(fields=['athlete', 'coach'], name='unique_athlete_coach'),)

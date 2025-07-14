@@ -14,6 +14,7 @@ from django.contrib.auth import (
     get_user_model,
 )
 from django.db.models import (
+    Avg,
     Count,
     Max,
     Min,
@@ -154,6 +155,7 @@ class UserViewSet(ReadOnlyModelViewSet['UserModel']):
 
         return qs.annotate(
             runs_finished=Count('runs', filter=Q(runs__status=RunStatus.FINISHED)),
+            rating=Avg('subscribers__rating'),
         )
 
     def get_serializer_class(self) -> type['BaseSerializer[Any]']:
@@ -408,3 +410,27 @@ class ChallengeSummaryAPIView(APIView):
             )
 
         return Response(serializers.ChallengeSummarySerializer(grouped_challenges, many=True).data)  # type: ignore[arg-type]
+
+
+class RateCoachAPIView(APIView):
+    def post(self, request: 'Request', coach_id: int) -> Response:
+        coach = get_object_or_404(User, id=coach_id)
+        athlete = get_object_or_404(User, id=request.data['athlete'])
+
+        try:
+            subscibe = Subscribe.objects.get(athlete=athlete, coach=coach)
+        except Subscribe.DoesNotExist:
+            return Response(
+                {
+                    'detail': 'Атлет должен быть подписан на тренера.',
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serizalizer = serializers.RateCoachSerializer(data=request.data | {'coach': coach_id})
+        serizalizer.is_valid(raise_exception=True)
+
+        subscibe.rating = serizalizer.validated_data['rating']
+        subscibe.save(update_fields=['rating'])
+
+        return Response(serizalizer.validated_data)

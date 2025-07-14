@@ -58,10 +58,20 @@ class RunSerializer(serializers.ModelSerializer[Run]):
 class UserSerializer(serializers.ModelSerializer['UserModel']):
     type = SerializerMethodField()
     runs_finished = serializers.IntegerField()
+    rating = serializers.IntegerField()
 
     class Meta:
         model = User
-        fields: tuple[str, ...] = ('id', 'date_joined', 'username', 'last_name', 'first_name', 'type', 'runs_finished')
+        fields: tuple[str, ...] = (
+            'id',
+            'date_joined',
+            'username',
+            'last_name',
+            'first_name',
+            'type',
+            'runs_finished',
+            'rating',
+        )
 
     def get_type(self, obj: 'UserModel') -> str:
         if obj.is_staff:
@@ -144,6 +154,15 @@ class SubscribeToCoachSerializer(serializers.ModelSerializer[Subscribe]):
             raise serializers.ValidationError({'athlete': 'Подписываться могут только атлеты.'})
 
         return super().validate(attrs)
+
+
+class RateCoachSerializer(serializers.Serializer[Subscribe]):
+    coach = serializers.IntegerField()
+    athlete = serializers.IntegerField()
+    rating = serializers.IntegerField(min_value=1, max_value=5)
+
+    class Meta:
+        fields = ('coach', 'athlete', 'rating')
 
 
 class _AthleteSerializer(serializers.Serializer[types.Athlete]):
