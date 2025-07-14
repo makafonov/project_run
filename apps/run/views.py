@@ -415,7 +415,15 @@ class ChallengeSummaryAPIView(APIView):
 class RateCoachAPIView(APIView):
     def post(self, request: 'Request', coach_id: int) -> Response:
         coach = get_object_or_404(User, id=coach_id)
-        athlete = get_object_or_404(User, id=request.data['athlete'])
+        try:
+            athlete = User.objects.get(id=request.data['athlete'])
+        except User.DoesNotExist:
+            return Response(
+                {
+                    'detail': 'Атлет не найден.',
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         try:
             subscibe = Subscribe.objects.get(athlete=athlete, coach=coach)
