@@ -457,7 +457,7 @@ class AnalyticsForCoachAPIView(APIView):
 
         total_runs = (
             User.objects.filter(subscriptions__coach=coach_id)
-            .annotate(total_runs=Count('runs', filter=Q(runs__status=RunStatus.FINISHED)))
+            .annotate(total_runs=Sum('runs__distance', filter=Q(runs__status=RunStatus.FINISHED)))
             .order_by('-total_runs')
             .values('id', 'total_runs')
             .first()
@@ -476,7 +476,7 @@ class AnalyticsForCoachAPIView(APIView):
                 'longest_run_user': longest_run['athlete_id'] if longest_run else None,
                 'longest_run_value': longest_run['distance'] if longest_run else None,
                 'total_run_user': total_runs['id'] if total_runs else None,
-                'total_run_value': float(total_runs['total_runs']) if total_runs else None,
+                'total_run_value': total_runs['total_runs'] if total_runs else None,
                 'speed_avg_user': avg_speed['id'] if avg_speed else None,
                 'speed_avg_value': avg_speed['avg_speed'] if avg_speed else None,
             }
