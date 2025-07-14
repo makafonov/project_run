@@ -442,3 +442,42 @@ class RateCoachAPIView(APIView):
         subscibe.save(update_fields=['rating'])
 
         return Response(serizalizer.validated_data)
+
+
+class AnalyticsForCoachAPIView(APIView):
+    def get(self, _: 'Request', coach_id: int) -> Response:
+        get_object_or_404(User, id=coach_id)
+
+        longest_run = (
+            Run.objects.filter(athlete__subscriptions__coach=coach_id)
+            .order_by('-distance')
+            .values('athlete_id', 'distance')
+            .first()
+        )
+
+        total_runs = (
+            User.objects.filter(subscriptions__coach=coach_id)
+            .annotate(total_runs=Count('runs', filter=Q(runs__status=RunStatus.FINISHED)))
+            .order_by('-total_runs')
+            .values('id', 'total_runs')
+            .first()
+        )
+
+        avg_speed = (
+            User.objects.filter(subscriptions__coach=coach_id)
+            .annotate(avg_speed=Avg('runs__speed', filter=Q(runs__status=RunStatus.FINISHED)))
+            .order_by('-avg_speed')
+            .values('id', 'avg_speed')
+            .first()
+        )
+
+        return Response(
+            {
+                'longest_run_user': longest_run['athlete_id'] if longest_run else None,
+                'longest_run_value': longest_run['distance'] if longest_run else None,
+                'total_run_user': total_runs['id'] if total_runs else None,
+                'total_run_value': total_runs['total_runs'] if total_runs else None,
+                'speed_avg_user': avg_speed['id'] if avg_speed else None,
+                'speed_avg_value': avg_speed['avg_speed'] if avg_speed else None,
+            }
+        )

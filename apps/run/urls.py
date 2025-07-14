@@ -27,6 +27,7 @@ urlpatterns = [
     path('upload_file/', views.FileUploadView.as_view()),
     path('subscribe_to_coach/<int:coach_id>/', views.SubscribeToCoachAPIView.as_view()),
     path('rate_coach/<int:coach_id>/', views.RateCoachAPIView.as_view()),
+    path('analytics_for_coach/<int:coach_id>/', views.AnalyticsForCoachAPIView.as_view()),
     path('challenges_summary/', views.ChallengeSummaryAPIView.as_view()),
     path('', include(router.urls)),
 ]
