@@ -14,7 +14,7 @@ from apps.run import (
 router = DefaultRouter()
 router.register('runs', views.RunViewSet)
 router.register('users', views.UserViewSet)
-router.register('athlete_info', views.AtheleteInfoViewSet)
+router.register('athlete_info', views.AthleteInfoViewSet)
 router.register('challenges', views.ChallengeViewSet)
 router.register('positions', views.PositionViewSet)
 router.register('collectible_item', views.CollectibleItemViewSet)

@@ -278,7 +278,7 @@ class StopRunAPIView(APIView):
         return result
 
 
-class AtheleteInfoViewSet(
+class AthleteInfoViewSet(
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
     GenericViewSet[AthleteInfo],
@@ -295,10 +295,10 @@ class AtheleteInfoViewSet(
         return athlete_info
 
     def update(self, request: 'Request', *args: Any, **kwargs: Any) -> Response:  # noqa: ANN401
-        respose = super().update(request, *args, **kwargs)
-        respose.status_code = status.HTTP_201_CREATED
+        response = super().update(request, *args, **kwargs)
+        response.status_code = status.HTTP_201_CREATED
 
-        return respose
+        return response
 
 
 class ChallengeViewSet(mixins.ListModelMixin, GenericViewSet[Challenge]):
@@ -426,7 +426,7 @@ class RateCoachAPIView(APIView):
             )
 
         try:
-            subscibe = Subscribe.objects.get(athlete=athlete, coach=coach)
+            subscribe = Subscribe.objects.get(athlete=athlete, coach=coach)
         except Subscribe.DoesNotExist:
             return Response(
                 {
@@ -435,13 +435,13 @@ class RateCoachAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        serizalizer = serializers.RateCoachSerializer(data=request.data | {'coach': coach_id})
-        serizalizer.is_valid(raise_exception=True)
+        serializer = serializers.RateCoachSerializer(data=request.data | {'coach': coach_id})
+        serializer.is_valid(raise_exception=True)
 
-        subscibe.rating = serizalizer.validated_data['rating']
-        subscibe.save(update_fields=['rating'])
+        subscribe.rating = serializer.validated_data['rating']
+        subscribe.save(update_fields=['rating'])
 
-        return Response(serizalizer.validated_data)
+        return Response(serializer.validated_data)
 
 
 class AnalyticsForCoachAPIView(APIView):
